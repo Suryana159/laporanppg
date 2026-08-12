@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Kegiatan Program PPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1C2621;
+    --ink-soft:#4B5750;
+    --paper:#FAF7EF;
+    --card:#FFFFFF;
+    --teal:#0F5B52;
+    --teal-deep:#0A3F39;
+    --gold:#C9932F;
+    --gold-soft:#F1E3C4;
+    --line:#E4DFD0;
+    --danger:#B3492F;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    color:var(--teal-deep);
+    margin:0;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- header ---------- */
+  header.top{
+    background:linear-gradient(135deg,var(--teal-deep),var(--teal) 70%);
+    color:#fff;
+    padding:28px 20px 40px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top svg.deco{
+    position:absolute; right:-30px; top:-30px; opacity:.18; width:220px; height:220px;
+  }
+  header.top .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin-bottom:6px;
+  }
+  header.top h1{
+    color:#fff;
+    font-size:26px;
+    line-height:1.25;
+    max-width:520px;
+  }
+  header.top p.sub{
+    margin:8px 0 0;
+    font-size:13.5px;
+    color:#E7EFEC;
+    max-width:460px;
+  }
+
+  .wrap{max-width:720px;margin:-20px auto 100px;padding:0 16px;position:relative;z-index:2;}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex; gap:6px; background:var(--card); border-radius:999px;
+    padding:5px; box-shadow:0 8px 24px -12px rgba(15,91,82,.25); margin-bottom:18px;
+  }
+  .tabs button{
+    flex:1; border:none; background:transparent; padding:10px 8px; border-radius:999px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:var(--ink-soft);
+    cursor:pointer; transition:.2s;
+  }
+  .tabs button.active{background:var(--teal); color:#fff;}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card); border-radius:var(--radius); padding:20px;
+    margin-bottom:16px; box-shadow:0 6px 20px -14px rgba(28,38,33,.25);
+    border:1px solid var(--line);
+  }
+  .card h2{font-size:17px; margin-bottom:4px;}
+  .card .hint{font-size:12.5px; color:var(--ink-soft); margin-bottom:14px;}
+  .step-no{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; background:var(--gold-soft); color:var(--teal-deep);
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; margin-right:8px;
+  }
+
+  /* ---------- dynamic rows ---------- */
+  .row-list{display:flex; flex-direction:column; gap:8px;}
+  .dyn-row{display:flex; gap:8px; align-items:center;}
+  .dyn-row input{flex:1;}
+  input[type=text], input[type=date]{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:14px; background:#FCFBF7; color:var(--ink);
+  }
+  input[type=text]:focus, input[type=date]:focus{outline:2px solid var(--teal); outline-offset:1px; background:#fff;}
+  .icon-btn{
+    width:38px; height:38px; min-width:38px; border-radius:10px; border:none; cursor:pointer;
+    font-size:18px; display:flex; align-items:center; justify-content:center; font-weight:700;
+    transition:.15s;
+  }
+  .icon-btn.add{background:var(--teal); color:#fff;}
+  .icon-btn.add:hover{background:var(--teal-deep);}
+  .icon-btn.remove{background:#F5E9E4; color:var(--danger);}
+  .icon-btn.remove:hover{background:#EFD8CE;}
+  .add-line{
+    display:flex; align-items:center; gap:8px; margin-top:10px;
+    background:none; border:1.5px dashed var(--teal); color:var(--teal);
+    padding:9px 14px; border-radius:10px; font-weight:600; font-size:13px; cursor:pointer; width:100%;
+    justify-content:center; font-family:'Inter',sans-serif;
+  }
+  .add-line:hover{background:#EFF6F4;}
+
+  /* ---------- checkbox grid (usia) ---------- */
+  .usia-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .usia-opt{
+    display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 10px; cursor:pointer; font-size:13px; background:#FCFBF7; transition:.15s;
+  }
+  .usia-opt input{width:16px; height:16px; accent-color:var(--teal);}
+  .usia-opt.checked{border-color:var(--teal); background:#EFF6F4; color:var(--teal-deep); font-weight:600;}
+
+  /* ---------- date row ---------- */
+  .date-field label{font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:6px; font-weight:600;}
+
+  /* ---------- photos ---------- */
+  .photo-drop{
+    border:1.5px dashed var(--line); border-radius:12px; padding:22px 14px; text-align:center;
+    cursor:pointer; color:var(--ink-soft); font-size:13px; background:#FCFBF7;
+  }
+  .photo-drop:hover{border-color:var(--teal); color:var(--teal);}
+  .photo-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;}
+  .photo-thumb{position:relative; border-radius:10px; overflow:hidden; aspect-ratio:1/1; border:1px solid var(--line);}
+  .photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-thumb button{
+    position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%;
+    background:rgba(28,38,33,.75); color:#fff; border:none; font-size:13px; cursor:pointer; line-height:1;
+  }
+
+  /* ---------- action bar ---------- */
+  .actions{display:flex; gap:10px; margin-top:4px;}
+  .btn{
+    flex:1; padding:14px; border-radius:12px; border:none; font-weight:700; font-size:14px;
+    cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-save{background:var(--gold); color:#3A2A05;}
+  .btn-save:hover{background:#B5822A;}
+  .btn-pdf{background:var(--teal); color:#fff;}
+  .btn-pdf:hover{background:var(--teal-deep);}
+  .btn-ghost{background:none; border:1.5px solid var(--line); color:var(--ink-soft);}
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:var(--teal-deep); color:#fff; padding:12px 20px; border-radius:999px; font-size:13px;
+    font-weight:600; opacity:0; pointer-events:none; transition:.25s; z-index:50; box-shadow:0 10px 30px -10px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---------- history ---------- */
+  .hist-item{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+    padding:14px; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; background:#FCFBF7;
+  }
+  .hist-item h3{font-size:14.5px; color:var(--ink); margin-bottom:4px;}
+  .hist-item .meta{font-size:12px; color:var(--ink-soft); line-height:1.6;}
+  .hist-actions{display:flex; gap:6px; flex-shrink:0;}
+  .hist-actions button{
+    border:none; background:var(--card); border:1px solid var(--line); padding:7px 10px; border-radius:8px;
+    font-size:12px; cursor:pointer; font-weight:600; color:var(--ink-soft);
+  }
+  .hist-actions button.pdf{color:var(--teal); border-color:var(--teal);}
+  .hist-actions button.del{color:var(--danger); border-color:#EFD8CE;}
+  .empty{text-align:center; padding:40px 10px; color:var(--ink-soft); font-size:13.5px;}
+  .sync-badge{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; padding:4px 10px; border-radius:999px;
+    background:var(--gold-soft); color:var(--teal-deep); font-weight:600;
+  }
+  .sync-badge.online{background:#DCEFE9; color:var(--teal-deep);}
+  .sync-badge.error{background:#F5E9E4; color:var(--danger);}
+
+  footer.wm{
+    text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);
+    padding:18px 0 30px; letter-spacing:.03em;
+  }
+
+  /* ---------- printable (off-screen) ---------- */
+  #printArea{position:fixed; left:-9999px; top:0; width:794px; background:#fff;}
+  .pg{width:794px; padding:48px 52px 70px; background:#fff; position:relative; font-family:'Inter',sans-serif; color:#1C2621;}
+  .pg h1.doc-title{font-family:'Fraunces',serif; font-size:22px; color:#0A3F39; margin:0 0 2px;}
+  .pg .doc-sub{font-size:11.5px; color:#6b6b6b; margin-bottom:22px; font-family:'JetBrains Mono',monospace;}
+  .pg .blk{margin-bottom:16px;}
+  .pg .blk label{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#0F5B52; font-weight:700; margin-bottom:6px;}
+  .pg .blk .val{font-size:13.5px; line-height:1.7;}
+  .pg .chip{display:inline-block; background:#F1E3C4; color:#5c4413; padding:3px 10px; border-radius:999px; font-size:11.5px; margin:0 6px 6px 0;}
+  .pg .divider{height:1px; background:#E4DFD0; margin:18px 0;}
+  .pg .photogrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;}
+  .pg .photogrid img{width:100%; height:200px; object-fit:cover; border-radius:8px; border:1px solid #E4DFD0;}
+  .pg .pgfooter{
+    position:absolute; bottom:22px; left:52px; right:52px; display:flex; justify-content:space-between;
+    font-size:10px; color:#9a9a90; font-family:'JetBrains Mono',monospace; border-top:1px solid #E4DFD0; padding-top:8px;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <svg class="deco" viewBox="0 0 200 200"><circle cx="150" cy="50" r="60" fill="#fff"/><circle cx="70" cy="120" r="40" fill="#C9932F"/></svg>
+  <div class="eyebrow">Program PPG &middot; Formulir Kegiatan</div>
+  <h1>Laporan Kegiatan Program PPG</h1>
+  <p class="sub">Catat kelompok, kegiatan, sasaran usia, waktu pelaksanaan, dan dokumentasi foto — lalu ekspor jadi PDF siap laporan.</p>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="active" data-tab="form" onclick="switchTab('form')">Formulir</button>
+    <button data-tab="riwayat" onclick="switchTab('riwayat')">Riwayat</button>
+    <button data-tab="pengaturan" onclick="switchTab('pengaturan')">Pengaturan</button>
+  </div>
+
+  <!-- ================= FORM TAB ================= -->
+  <div id="tab-form">
+
+    <div class="card">
+      <h2><span class="step-no">1</span>Nama Bidang</h2>
+      <p class="hint">Bidang/unit yang melaksanakan atau bertanggung jawab atas kegiatan ini.</p>
+      <input type="text" id="bidangInput" placeholder="Contoh: Bidang Pendidikan / Bidang Humas">
+    </div>
+
+    <div class="card">
+      <h2><span class="step-no">2</span>Nama Kelompok</h2>
+      <p class="hint">Tambahkan satu atau lebih kelompok yang mengikuti kegiatan.</p>
+      <div class="row-list" id="kelompokList"></div>
+      <button class="add-line" onclick="addRow('kelompok')">+ Tambah Nama Kelompok</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-no">3</span>Nama Kegiatan</h2>
+      <p class="hint">Tambahkan satu atau lebih kegiatan yang dilaksanakan.</p>
+      <div class="row-list" id="kegiatanList"></div>
+      <button class="add-line" onclick="addRow('kegiatan')">+ Tambah Nama Kegiatan</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-no">4</span>Jenis Usia Pelaksana</h2>
+      <p class="hint">Pilih satu atau lebih kelompok usia yang melaksanakan kegiatan.</p>
+      <div class="usia-grid" id="usiaGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-no">5</span>Tanggal Pelaksanaan</h2>
+      <p class="hint">Tanggal, bulan, dan tahun kegiatan dilaksanakan.</p>
+      <div class="date-field">
+        <label for="tanggalInput">Tanggal Pelaksanaan</label>
+        <input type="date" id="tanggalInput">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-no">6</span>Foto Kegiatan</h2>
+      <p class="hint">Unggah dokumentasi foto kegiatan (bisa lebih dari satu).</p>
+      <div class="photo-drop" onclick="document.getElementById('photoInput').click()">
+        📷 Ketuk untuk memilih foto kegiatan
+      </div>
+      <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-save" onclick="saveReport()">💾 Simpan</button>
+      <button class="btn btn-pdf" onclick="saveReport(true)">⬇ Export PDF</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-ghost" style="width:100%;" onclick="resetForm()">Formulir Baru / Bersihkan</button>
+    </div>
+  </div>
+
+  <!-- ================= HISTORY TAB ================= -->
+  <div id="tab-riwayat" style="display:none;">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <h2>Riwayat Laporan</h2>
+        <span id="syncBadge" class="sync-badge">💾 Lokal</span>
+      </div>
+      <p class="hint">Ketuk PDF untuk mengekspor ulang, atau Hapus untuk menghapus laporan.</p>
+      <div id="histList"></div>
+    </div>
+  </div>
+
+  <!-- ================= SETTINGS TAB ================= -->
+  <div id="tab-pengaturan" style="display:none;">
+    <div class="card">
+      <h2>Sinkronisasi Firebase</h2>
+      <p class="hint">Hubungkan ke Firebase Realtime Database agar laporan tersimpan online dan bisa diakses dari perangkat lain. Kosongkan &amp; simpan untuk kembali memakai penyimpanan lokal saja.</p>
+      <div class="date-field" style="margin-bottom:10px;">
+        <label for="fbUrlInput">Database URL</label>
+        <input type="text" id="fbUrlInput" placeholder="https://nama-project-default-rtdb.asia-southeast1.firebasedatabase.app">
+      </div>
+      <div class="date-field" style="margin-bottom:14px;">
+        <label for="fbSecretInput">Secret / Auth Token (opsional)</label>
+        <input type="text" id="fbSecretInput" placeholder="Isi jika Rules database memerlukan otentikasi">
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="testFirebase()">🔌 Tes Koneksi</button>
+        <button class="btn btn-pdf" onclick="saveFirebaseConfig()">💾 Simpan Pengaturan</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Cara Menghubungkan</h2>
+      <p class="hint" style="margin-bottom:10px;">1. Buat project di <span class="mono">console.firebase.google.com</span>, aktifkan <b>Realtime Database</b>.<br><br>
+      2. Salin <b>Database URL</b> project ke kolom di atas.<br><br>
+      3. Atur Rules agar aplikasi bisa membaca/menulis, misalnya (mode uji coba):</p>
+      <pre style="background:#FCFBF7; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:11.5px; font-family:'JetBrains Mono',monospace; overflow-x:auto;">{
+  "rules": {
+    "laporan_ppg": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}</pre>
+      <p class="hint">Untuk keamanan lebih baik, ganti aturan ini dengan otentikasi/secret setelah pengujian selesai.</p>
+    </div>
+  </div>
+</div>
+
+<footer class="wm">Made by: Suryana</footer>
+<div class="toast" id="toast"></div>
+
+<!-- hidden printable render target -->
+<div id="printArea"></div>
+
+<script>
+const USIA_OPTIONS = ["Usia Paud","Usia Kelas 1","Usia Kelas 2","Usia Kelas 3","Usia Pra Remaja","Usia Remaja","Usia Mandiri","Usia Nikah"];
+const STORE_KEY = "ppg_laporan_list";
+const FB_CONFIG_KEY = "ppg_firebase_config";
+const FB_PATH = "laporan_ppg";
+const DEFAULT_FB_CONFIG = {
+  url: "https://gustik-radio-default-rtdb.asia-southeast1.firebasedatabase.app",
+  secret: ""
+};
+
+let photos = []; // {name, dataUrl}
+
+/* ---------------- Firebase REST helpers ---------------- */
+function getFirebaseConfig(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(FB_CONFIG_KEY));
+    if(saved && saved.url) return saved;
+  }catch(e){}
+  return DEFAULT_FB_CONFIG;
+}
+function fbBaseUrl(){
+  const cfg = getFirebaseConfig();
+  if(!cfg || !cfg.url) return null;
+  return cfg.url.replace(/\/+$/,'');
+}
+function fbAuthQuery(){
+  const cfg = getFirebaseConfig();
+  return (cfg && cfg.secret) ? `?auth=${encodeURIComponent(cfg.secret)}` : '';
+}
+function isFirebaseConfigured(){ return !!fbBaseUrl(); }
+
+async function fbGetAll(){
+  const base = fbBaseUrl();
+  if(!base) return null;
+  const res = await fetch(`${base}/${FB_PATH}.json${fbAuthQuery()}`);
+  if(!res.ok) throw new Error('Gagal mengambil data Firebase');
+  const data = await res.json();
+  if(!data) return [];
+  return Object.entries(data).map(([key,val])=>({...val, _fbKey:key})).sort((a,b)=>(b.savedAt||'').localeCompare(a.savedAt||''));
+}
+async function fbPush(record){
+  const base = fbBaseUrl();
+  if(!base) return null;
+  const res = await fetch(`${base}/${FB_PATH}.json${fbAuthQuery()}`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(record)
+  });
+  if(!res.ok) throw new Error('Gagal menyimpan ke Firebase');
+  return await res.json(); // {name: "-Nxxxx"}
+}
+async function fbDelete(fbKey){
+  const base = fbBaseUrl();
+  if(!base || !fbKey) return;
+  const res = await fetch(`${base}/${FB_PATH}/${fbKey}.json${fbAuthQuery()}`, {method:'DELETE'});
+  if(!res.ok) throw new Error('Gagal menghapus di Firebase');
+}
+
+function setSyncBadge(state, label){
+  const b = document.getElementById('syncBadge');
+  if(!b) return;
+  b.className = 'sync-badge' + (state ? ' '+state : '');
+  b.textContent = label;
+}
+
+function saveFirebaseConfig(){
+  const url = document.getElementById('fbUrlInput').value.trim();
+  const secret = document.getElementById('fbSecretInput').value.trim();
+  if(!url){
+    localStorage.removeItem(FB_CONFIG_KEY);
+    toast('Sinkronisasi dimatikan, kembali ke penyimpanan lokal');
+  } else {
+    localStorage.setItem(FB_CONFIG_KEY, JSON.stringify({url, secret}));
+    toast('✔ Pengaturan Firebase disimpan');
+  }
+}
+async function testFirebase(){
+  const url = document.getElementById('fbUrlInput').value.trim();
+  const secret = document.getElementById('fbSecretInput').value.trim();
+  if(!url){ toast('⚠ Isi Database URL dulu'); return; }
+  toast('⏳ Menguji koneksi...');
+  try{
+    const authQ = secret ? `?auth=${encodeURIComponent(secret)}` : '';
+    const res = await fetch(`${url.replace(/\/+$/,'')}/${FB_PATH}.json${authQ}`);
+    if(!res.ok) throw new Error();
+    toast('✔ Koneksi berhasil');
+  }catch(e){
+    toast('✖ Gagal terhubung. Cek URL / Rules database.');
+  }
+}
+function loadConfigIntoFields(){
+  const cfg = getFirebaseConfig();
+  if(cfg){
+    document.getElementById('fbUrlInput').value = cfg.url || '';
+    document.getElementById('fbSecretInput').value = cfg.secret || '';
+  }
+}
+
+/* ---------------- init dynamic rows ---------------- */
+function makeRow(listId, placeholder){
+  const wrap = document.getElementById(listId);
+  const row = document.createElement('div');
+  row.className = 'dyn-row';
+  row.innerHTML = `<input type="text" placeholder="${placeholder}">
+    <button class="icon-btn remove" onclick="removeRow(this)" title="Hapus">−</button>`;
+  wrap.appendChild(row);
+}
+function addRow(kind){
+  if(kind==='kelompok') makeRow('kelompokList','Contoh: Kelompok Melati');
+  if(kind==='kegiatan') makeRow('kegiatanList','Contoh: Pengajian Rutin Mingguan');
+}
+function removeRow(btn){
+  const list = btn.closest('.row-list');
+  if(list.children.length > 1){
+    btn.closest('.dyn-row').remove();
+  } else {
+    btn.closest('.dyn-row').querySelector('input').value='';
+  }
+}
+
+/* ---------------- usia checkboxes ---------------- */
+function renderUsia(){
+  const grid = document.getElementById('usiaGrid');
+  grid.innerHTML = '';
+  USIA_OPTIONS.forEach((u,i)=>{
+    const label = document.createElement('label');
+    label.className = 'usia-opt';
+    label.innerHTML = `<input type="checkbox" value="${u}" onchange="this.closest('.usia-opt').classList.toggle('checked', this.checked)"> ${u}`;
+    grid.appendChild(label);
+  });
+}
+
+/* ---------------- photos ---------------- */
+function handlePhotos(e){
+  const files = Array.from(e.target.files);
+  let remaining = files.length;
+  if(remaining===0) return;
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      photos.push({name:file.name, dataUrl:ev.target.result});
+      renderPhotos();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+function renderPhotos(){
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+  photos.forEach((p,idx)=>{
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `<img src="${p.dataUrl}"><button onclick="removePhoto(${idx})">×</button>`;
+    grid.appendChild(div);
+  });
+}
+function removePhoto(idx){ photos.splice(idx,1); renderPhotos(); }
+
+/* ---------------- tabs ---------------- */
+function switchTab(tab){
+  document.getElementById('tab-form').style.display = tab==='form' ? 'block':'none';
+  document.getElementById('tab-riwayat').style.display = tab==='riwayat' ? 'block':'none';
+  document.getElementById('tab-pengaturan').style.display = tab==='pengaturan' ? 'block':'none';
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  if(tab==='riwayat') renderHistory();
+  if(tab==='pengaturan') loadConfigIntoFields();
+}
+
+/* ---------------- toast ---------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------------- gather / reset ---------------- */
+function gatherFormData(){
+  const bidang = document.getElementById('bidangInput').value.trim();
+  const kelompok = Array.from(document.querySelectorAll('#kelompokList input')).map(i=>i.value.trim()).filter(Boolean);
+  const kegiatan = Array.from(document.querySelectorAll('#kegiatanList input')).map(i=>i.value.trim()).filter(Boolean);
+  const usia = Array.from(document.querySelectorAll('#usiaGrid input:checked')).map(i=>i.value);
+  const tanggal = document.getElementById('tanggalInput').value;
+  return {bidang, kelompok, kegiatan, usia, tanggal, photos: [...photos]};
+}
+function validate(data){
+  if(!data.bidang){ toast('⚠ Isi Nama Bidang'); return false; }
+  if(data.kelompok.length===0){ toast('⚠ Isi minimal satu Nama Kelompok'); return false; }
+  if(data.kegiatan.length===0){ toast('⚠ Isi minimal satu Nama Kegiatan'); return false; }
+  if(data.usia.length===0){ toast('⚠ Pilih minimal satu Jenis Usia'); return false; }
+  if(!data.tanggal){ toast('⚠ Isi Tanggal Pelaksanaan'); return false; }
+  return true;
+}
+function resetForm(){
+  document.getElementById('kelompokList').innerHTML='';
+  document.getElementById('kegiatanList').innerHTML='';
+  addRow('kelompok'); addRow('kegiatan');
+  document.querySelectorAll('#usiaGrid input').forEach(i=>{i.checked=false; i.closest('.usia-opt').classList.remove('checked');});
+  document.getElementById('tanggalInput').value='';
+  photos = []; renderPhotos();
+  toast('Formulir dibersihkan');
+}
+
+/* ---------------- storage ---------------- */
+function getStored(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }catch(e){ return []; }
+}
+function setStored(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+
+async function saveReport(alsoExportPdf){
+  const data = gatherFormData();
+  if(!validate(data)) return;
+  data.id = 'lap_' + Date.now();
+  data.savedAt = new Date().toISOString();
+
+  // always cache locally so the form still works offline / without Firebase
+  const list = getStored();
+  list.unshift(data);
+  setStored(list);
+
+  if(isFirebaseConfigured()){
+    try{
+      await fbPush(data);
+      toast('✔ Laporan tersimpan & tersinkron ke Firebase');
+    }catch(e){
+      toast('✔ Tersimpan lokal (gagal sinkron ke Firebase, cek koneksi)');
+    }
+  } else {
+    toast('✔ Laporan tersimpan (lokal)');
+  }
+
+  if(alsoExportPdf){
+    exportToPdf(data);
+  }
+}
+
+async function deleteReport(id, fbKey){
+  if(!confirm('Hapus laporan ini?')) return;
+  const list = getStored().filter(r=>r.id!==id);
+  setStored(list);
+  if(isFirebaseConfigured() && fbKey){
+    try{ await fbDelete(fbKey); }catch(e){ /* ignore, local already removed */ }
+  }
+  renderHistory();
+  toast('Laporan dihapus');
+}
+
+function formatTanggal(iso){
+  if(!iso) return '-';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'});
+}
+
+/* ---------------- history render ---------------- */
+async function renderHistory(){
+  const wrap = document.getElementById('histList');
+  let list = getStored();
+
+  if(isFirebaseConfigured()){
+    setSyncBadge('', '⏳ Menyinkron...');
+    try{
+      const remote = await fbGetAll();
+      list = remote;
+      setStored(remote.map(r=>({...r}))); // refresh local cache
+      setSyncBadge('online', '☁ Tersinkron');
+    }catch(e){
+      setSyncBadge('error', '✖ Offline / gagal sinkron');
+    }
+  } else {
+    setSyncBadge('', '💾 Lokal');
+  }
+
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty">Belum ada laporan tersimpan.</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  list.forEach(r=>{
+    const item = document.createElement('div');
+    item.className = 'hist-item';
+    const fbKey = r._fbKey || '';
+    item.innerHTML = `
+      <div>
+        <h3>${escapeHtml(r.kegiatan.join(', '))}</h3>
+        <div class="meta">
+          Bidang: ${escapeHtml(r.bidang || '-')}<br>
+          Kelompok: ${escapeHtml(r.kelompok.join(', '))}<br>
+          Usia: ${escapeHtml(r.usia.join(', '))}<br>
+          Tanggal: ${formatTanggal(r.tanggal)} &middot; Foto: ${r.photos.length}
+        </div>
+      </div>
+      <div class="hist-actions">
+        <button class="pdf" onclick='exportToPdf(${JSON.stringify(r).replace(/'/g,"&#39;")})'>PDF</button>
+        <button class="del" onclick="deleteReport('${r.id}','${fbKey}')">Hapus</button>
+      </div>`;
+    wrap.appendChild(item);
+  });
+}
+
+/* ---------------- PDF export ---------------- */
+async function exportToPdf(data){
+  toast('⏳ Menyiapkan PDF...');
+  const area = document.getElementById('printArea');
+  area.innerHTML = buildPrintHtml(data);
+  await new Promise(r=>setTimeout(r, 60)); // allow images to layout
+
+  const pages = area.querySelectorAll('.pg');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p','mm','a4');
+  const pageW = 210, pageH = 297;
+
+  for(let i=0;i<pages.length;i++){
+    const canvas = await html2canvas(pages[i], {scale:2, useCORS:true, backgroundColor:'#ffffff'});
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const imgH = (canvas.height * pageW) / canvas.width;
+    if(i>0) pdf.addPage();
+    pdf.addImage(imgData, 'JPEG', 0, 0, pageW, Math.min(imgH, pageH));
+  }
+
+  area.innerHTML = '';
+  const fname = 'Laporan-PPG-' + (data.tanggal || 'tanpa-tanggal') + '.pdf';
+  pdf.save(fname);
+  toast('✔ PDF berhasil diunduh');
+}
+
+function buildPrintHtml(data){
+  const chips = arr => arr.map(v=>`<span class="chip">${escapeHtml(v)}</span>`).join('');
+  const photosHtml = data.photos.length
+    ? `<div class="blk"><label>Dokumentasi Foto</label><div class="photogrid">${data.photos.map(p=>`<img src="${p.dataUrl}">`).join('')}</div></div>`
+    : '';
+  const now = new Date().toLocaleDateString('id-ID', {day:'2-digit',month:'long',year:'numeric'});
+
+  return `
+  <div class="pg">
+    <h1 class="doc-title">Laporan Kegiatan Program PPG</h1>
+    <div class="doc-sub">Dicetak: ${now}</div>
+
+    <div class="blk">
+      <label>Nama Bidang</label>
+      <div class="val">${escapeHtml(data.bidang || '-')}</div>
+    </div>
+
+    <div class="blk">
+      <label>Nama Kelompok</label>
+      <div class="val">${chips(data.kelompok)}</div>
+    </div>
+
+    <div class="blk">
+      <label>Nama Kegiatan</label>
+      <div class="val">${data.kegiatan.map(escapeHtml).join('<br>')}</div>
+    </div>
+
+    <div class="blk">
+      <label>Jenis Usia Pelaksana</label>
+      <div class="val">${chips(data.usia)}</div>
+    </div>
+
+    <div class="blk">
+      <label>Tanggal Pelaksanaan</label>
+      <div class="val">${formatTanggal(data.tanggal)}</div>
+    </div>
+
+    <div class="divider"></div>
+    ${photosHtml}
+
+    <div class="pgfooter">
+      <span>Made by: Suryana</span>
+      <span>Laporan Kegiatan Program PPG</span>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ---------------- boot ---------------- */
+renderUsia();
+addRow('kelompok');
+addRow('kegiatan');
+loadConfigIntoFields();
+</script>
+</body>
+</html>
