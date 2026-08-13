@@ -502,7 +502,19 @@ function renderPhotos(){
 function removePhoto(idx){ photos.splice(idx,1); renderPhotos(); }
 
 /* ---------------- tabs ---------------- */
+const ADMIN_PIN = "159753";
+let settingsUnlocked = false;
+
 function switchTab(tab){
+  if(tab==='pengaturan' && !settingsUnlocked){
+    const pin = prompt('Masukkan PIN Admin untuk membuka Pengaturan:');
+    if(pin === null) return; // dibatalkan, jangan pindah tab
+    if(pin !== ADMIN_PIN){
+      toast('✖ PIN salah');
+      return;
+    }
+    settingsUnlocked = true;
+  }
   document.getElementById('tab-form').style.display = tab==='form' ? 'block':'none';
   document.getElementById('tab-riwayat').style.display = tab==='riwayat' ? 'block':'none';
   document.getElementById('tab-pengaturan').style.display = tab==='pengaturan' ? 'block':'none';
