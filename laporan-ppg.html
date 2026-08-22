@@ -605,6 +605,7 @@ async function saveReport(alsoExportPdf){
   if(!validate(data)) return;
   data.id = 'lap_' + Date.now();
   data.savedAt = new Date().toISOString();
+  data._synced = false;
 
   // always cache locally so the form still works offline / without Firebase
   const list = getStored();
@@ -614,9 +615,12 @@ async function saveReport(alsoExportPdf){
   if(isFirebaseConfigured()){
     try{
       await fbPush(data);
+      data._synced = true;
+      const refreshed = getStored().map(r => r.id===data.id ? data : r);
+      setStored(refreshed);
       toast('✔ Laporan tersimpan & tersinkron ke Firebase');
     }catch(e){
-      toast('✔ Tersimpan lokal (gagal sinkron ke Firebase, cek koneksi)');
+      toast('⚠ Tersimpan di perangkat ini, tapi BELUM terkirim ke Firebase (akan dicoba otomatis lagi)');
     }
   } else {
     toast('✔ Laporan tersimpan (lokal)');
@@ -625,6 +629,26 @@ async function saveReport(alsoExportPdf){
   if(alsoExportPdf){
     exportToPdf(data);
   }
+
+  syncPendingReports(); // try to flush anything still unsynced
+}
+
+/* Retry sending any locally-saved reports that never made it to Firebase */
+async function syncPendingReports(){
+  if(!isFirebaseConfigured()) return;
+  const list = getStored();
+  const pending = list.filter(r => r._synced === false);
+  if(pending.length === 0) return;
+  for(const r of pending){
+    try{
+      const { _synced, ...record } = r;
+      await fbPush(record);
+      r._synced = true;
+    }catch(e){
+      // still offline / still failing — leave it queued, try again next time
+    }
+  }
+  setStored(list);
 }
 
 async function deleteReport(id, fbKey){
@@ -647,22 +671,29 @@ function formatTanggal(iso){
 /* ---------------- history render ---------------- */
 async function renderHistory(){
   const wrap = document.getElementById('histList');
-  let list = getStored();
 
   if(isFirebaseConfigured()){
     setSyncBadge('', '⏳ Menyinkron...');
+    await syncPendingReports(); // flush anything queued from a previous failed save
     try{
       const remote = await fbGetAll();
-      list = remote;
-      setStored(remote.map(r=>({...r}))); // refresh local cache
+      const remoteIds = new Set(remote.map(r=>r.id));
+      const localOnly = getStored().filter(r => r._synced===false && !remoteIds.has(r.id));
       setSyncBadge('online', '☁ Tersinkron');
+      renderHistoryList([...localOnly, ...remote]);
+      setStored([...localOnly, ...remote]);
+      return;
     }catch(e){
       setSyncBadge('error', '✖ Offline / gagal sinkron');
     }
   } else {
     setSyncBadge('', '💾 Lokal');
   }
+  renderHistoryList(getStored());
+}
 
+function renderHistoryList(list){
+  const wrap = document.getElementById('histList');
   if(list.length===0){
     wrap.innerHTML = '<div class="empty">Belum ada laporan tersimpan.</div>';
     return;
@@ -672,9 +703,10 @@ async function renderHistory(){
     const item = document.createElement('div');
     item.className = 'hist-item';
     const fbKey = r._fbKey || '';
+    const pendingBadge = r._synced===false ? '<span class="sync-badge error" style="margin-left:6px;">⏳ Belum sinkron</span>' : '';
     item.innerHTML = `
       <div>
-        <h3>${escapeHtml(r.kegiatan.join(', '))}</h3>
+        <h3>${escapeHtml(r.kegiatan.join(', '))}${pendingBadge}</h3>
         <div class="meta">
           Bidang: ${escapeHtml(r.bidang || '-')}<br>
           Kelompok: ${escapeHtml(r.kelompok.join(', '))}<br>
